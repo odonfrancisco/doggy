@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema();
+const Schema = mongoose.Schema;
 
 const gameSchema = new Schema({
     name: {
@@ -25,9 +25,11 @@ const gameSchema = new Schema({
     },
     // Time for the game to take place
     time: String,
+    // Date for game to take place
+    date: Schema.Types.Date,
     // Description of game to be played
     description: String,
-    // Equipment necesarry and the users who
+    // Equipment necessary and the users who
         // will supply said equipment
     equipment: Schema.Types.Mixed,
     // Array of players' IDs
@@ -42,7 +44,7 @@ const gameSchema = new Schema({
         ref: 'Comment'
     }],
     // Sets whether game should be publicly accessed or not
-    private: boolean
+    private: Schema.Types.Boolean
 }, {
     timestamps: {
       createdAt: 'created_at',

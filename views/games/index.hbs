@@ -1,0 +1,9 @@
+<a href="/games/create"><input type="button" value="Create Game"></a>
+
+
+{{#each games}}
+    <a href="/games/{{this._id}}"><div>
+        {{this.name}}
+    </div>
+    </a>
+{{/each}}

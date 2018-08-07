@@ -80,6 +80,8 @@ app.use('/', index);
 
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
-      
+
+const gameRoutes = require('./routes/game');
+app.use('/games', gameRoutes);
 
 module.exports = app;
