@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const User = require('../models/User');
 const Game = require('../models/Game');
 const {ensureLoggedIn, ensureLoggedOut} = require('connect-ensure-login');
 
@@ -34,7 +35,7 @@ router.get('/', ensureLoggedIn('/auth/login'), (req, res, next) => {
 
 // This only shows all the games a user is part of
 router.get('/dashboard', ensureLoggedIn('/auth/login'), (req, res, next) => {
-    Game.find({$or: [{creatorId: req.session.passport.user}, {$in: {players: req.session.passport.user}}]})
+    Game.find({$or: [{creatorId: req.session.passport.user}, {players: {$in: [req.session.passport.user]}}]})
         .then(games => {
             res.render('games/dashboard', {games});
         })
@@ -75,8 +76,8 @@ router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
 
     newGame.save()
         .then(game => {
-            // res.redirect(`/games/${game._id}`);
-            res.redirect('/games');
+            res.redirect(`/games/${game._id}`);
+            // res.redirect('/games');
         })
         .catch(err => {
             console.log('Error in saving new game created game.js: ', err);
@@ -87,7 +88,17 @@ router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
 router.get('/:id', ensureLoggedIn('/auth/login'), (req, res, next) => {
     Game.findById(req.params.id)
         .then(game => {
-            res.render('games/view', {game});
+            if(game.creatorId == req.session.passport.user){
+                game.admin = true;
+            }
+            User.find({}, {username:1})
+                .then(users => {
+                    res.render('games/view', {game, users})
+                })
+                .catch(err => {
+                    console.log('Error in finding all users for Player add dropdown game.js/:id', err);
+                    next();
+                })
         })
         .catch(err => {
             console.log('Error in finding particular game to display. game.js/:id:', err);
@@ -103,7 +114,7 @@ router.get('/edit/:id', ensureLoggedIn('/auth/login'), checkCreator('id'), (req,
     res.render('games/create', {game})
 })
 
-router.post('/edit/:id', ensureLoggedIn('auth/login'), checkCreator('id'), (req, res, next) => {
+router.post('/edit/:id', ensureLoggedIn('/auth/login'), checkCreator('id'), (req, res, next) => {
     const {name, description, category, minPlayers, maxPlayers, time, date, private} = req.body;
     let {equipment} = req.body;
     let equipmentObj = {};
@@ -118,6 +129,17 @@ router.post('/edit/:id', ensureLoggedIn('auth/login'), checkCreator('id'), (req,
         })
         .catch(err => {
             console.log('Error in updating game when editing game.js/edit/:id : ', err);
+            next();
+        })
+})
+
+router.get('/delete/:id', ensureLoggedIn('/auth/login'), checkCreator('id'), (req, res, next) => {
+    Game.findByIdAndRemove(req.params.id)
+        .then(game => {
+            res.redirect('/games');
+        })
+        .catch(err => {
+            console.log('Error in deleting game. game.js/delete/:id', err);
             next();
         })
 })

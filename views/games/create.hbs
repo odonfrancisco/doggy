@@ -9,6 +9,9 @@
     <br>
     <label for="category">Category</label>
     <select name="category" value="{{game.category}}">
+        {{#if game}}
+            <option value="{{game.category}}">{{game.category}}</option>
+        {{/if}}
         <option value="basketball">Basketball</option>
         <option value="soccer">Soccer</option>
         <option value="baseball">BaseBall</option>
@@ -25,7 +28,7 @@
     <br>
     <input type="text" name="location" placeholder="Location">    
     <br><br>
-    <input type="time" name="time" value="12:00" value="{{game.time}}">
+    <input type="time" name="time" {{#if game}} value="{{game.time}}" {{else}} value="12:00" {{/if}}>
     <br>
     <input type="date" name="date" value="{{game.date}}">
     <br>
@@ -45,3 +48,7 @@
     {{/if}}
 
 </form>
+
+{{#if game}}
+    <a href="/games/delete/{{game._id}}"><input type="button" value="DELETE"></a>
+{{/if}}

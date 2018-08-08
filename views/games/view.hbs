@@ -1,2 +1,25 @@
+<a href='/games'><input type="button" value="Go Back to all games"></a>
 <h1>{{game.name}}</h1>
+
+{{#if game.admin}}
+    <input id="addBtn" type="button" value="Add Players" onclick="showForm('addBtn', 'addForm')">
+
+    <div id="addForm" style="display:none">
+        <fieldset id="usersField">
+        </fieldset>
+        <br>
+
+        <label>Players</label>
+
+        <div class="dropdown">
+            <input type="text" placeholder="Search.." id="userInput" onkeyup="filterFunction(), showMembersInput()" autocomplete="off">
+            <input type="button" value="Add" onclick="addMember()">
+            <div id="myDropdown" class="dropdown-content">
+                {{#each users}}
+                <a href="#{{this.username}}">{{this.username}}</a>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+{{/if}}
 <a href="/games/edit/{{game._id}}"><input type="button" value="Edit"></a>
