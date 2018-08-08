@@ -3,6 +3,24 @@ const router = express.Router();
 const Game = require('../models/Game');
 const {ensureLoggedIn, ensureLoggedOut} = require('connect-ensure-login');
 
+function checkCreator(id){
+    return (req, res, next) => {
+        Game.findById(req.params[id])
+            .then(game => {
+                if(game.creatorId == req.session.passport.user){
+                    req.game = game;
+                    return next();
+                } else {
+                    res.redirect(`/games/${game._id}`)
+                }
+            })
+            .catch(err => {
+                console.log('Error in finding game byId game.js to authorize user is creator: ', err);
+                next();
+            })
+    }
+}
+
 router.get('/', ensureLoggedIn('/auth/login'), (req, res, next) => {
     Game.find()
         .then(games => {
@@ -13,6 +31,18 @@ router.get('/', ensureLoggedIn('/auth/login'), (req, res, next) => {
             next();
         })
 });
+
+// This only shows all the games a user is part of
+router.get('/dashboard', ensureLoggedIn('/auth/login'), (req, res, next) => {
+    Game.find({$or: [{creatorId: req.session.passport.user}, {$in: {players: req.session.passport.user}}]})
+        .then(games => {
+            res.render('games/dashboard', {games});
+        })
+        .catch(err => {
+            console.log('Error in loading user\'s game dashboard game.js/dashboard: ', err);
+            next();
+        })
+})
 
 router.get('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
     res.render('games/create');
@@ -50,6 +80,44 @@ router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
         })
         .catch(err => {
             console.log('Error in saving new game created game.js: ', err);
+            next();
+        })
+})
+
+router.get('/:id', ensureLoggedIn('/auth/login'), (req, res, next) => {
+    Game.findById(req.params.id)
+        .then(game => {
+            res.render('games/view', {game});
+        })
+        .catch(err => {
+            console.log('Error in finding particular game to display. game.js/:id:', err);
+            next();
+        })
+})
+
+router.get('/edit/:id', ensureLoggedIn('/auth/login'), checkCreator('id'), (req, res, next) => {
+    // Passing the particular game in the request in the 'checkCreator' function
+        // then making it equal to the game variable to pass to hbs
+    const game = req.game;
+    game.equipment = Object.keys(game.equipment).join();
+    res.render('games/create', {game})
+})
+
+router.post('/edit/:id', ensureLoggedIn('auth/login'), checkCreator('id'), (req, res, next) => {
+    const {name, description, category, minPlayers, maxPlayers, time, date, private} = req.body;
+    let {equipment} = req.body;
+    let equipmentObj = {};
+    equipmentArr = equipment.split(',');
+    equipmentArr.forEach(e => {
+        equipmentObj[e] = null;
+    })
+
+    Game.findByIdAndUpdate(req.params.id, {name, description, category, minPlayers, maxPlayers, time, date, private, equipment:equipmentObj})
+        .then(game => {
+            res.redirect(`/games/${game._id}`)
+        })
+        .catch(err => {
+            console.log('Error in updating game when editing game.js/edit/:id : ', err);
             next();
         })
 })

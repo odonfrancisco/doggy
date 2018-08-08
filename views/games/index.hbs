@@ -1,9 +1,15 @@
+<h1>All Games</h1>
+<a href="/games/dashboard"><input type="button" value="View Your Games"></a>
 <a href="/games/create"><input type="button" value="Create Game"></a>
 
 
 {{#each games}}
-    <a href="/games/{{this._id}}"><div>
-        {{this.name}}
-    </div>
+    <a href="/games/{{this._id}}">
+        <div>
+            {{this.name}}<br>
+            {{this.date}}<br>
+            {{this.time}}
+
+        </div>
     </a>
 {{/each}}

@@ -1,9 +1,14 @@
+{{#if game}}
+<form action="/games/edit/{{game._id}}" method="post">
+{{else}}
 <form action="/games/create" method="post">
-    <input type="text" name="name" placeholder="Game Name">
+{{/if}}
+    <input type="text" name="name" placeholder="Game Name" value="{{game.name}}">
     <br>
-    <input type="text" name="description" placeholder="Description of what's boutta go down">
+    <input type="text" name="description" placeholder="Description of what's boutta go down" value="{{game.description}}">
     <br>
-    <select name="category">
+    <label for="category">Category</label>
+    <select name="category" value="{{game.category}}">
         <option value="basketball">Basketball</option>
         <option value="soccer">Soccer</option>
         <option value="baseball">BaseBall</option>
@@ -13,25 +18,30 @@
     </select>
     <br>
     <label for="minPlayers">Min Players:</label>
-    <input type="number" name="minPlayers">
+    <input type="number" name="minPlayers" value="{{game.minPlayers}}">
     
     <label for="maxPlayers">Max Players:</label>
-    <input type="number" name="maxPlayers">
+    <input type="number" name="maxPlayers" value="{{game.maxPlayers}}">
     <br>
     <input type="text" name="location" placeholder="Location">    
     <br><br>
-    <input type="time" name="time" value="12:00">
+    <input type="time" name="time" value="12:00" value="{{game.time}}">
     <br>
-    <input type="date" name="date">
+    <input type="date" name="date" value="{{game.date}}">
     <br>
 
     <label for="equipment">Equipment needed (Separated by commas)</label>
-    <input type="text" name="equipment" placeholder="Equipment needed separated by commmas">
+    <input type="text" name="equipment" placeholder="Equipment needed separated by commmas" value="{{game.equipment}}">
 
     <br>
-    <input type="radio" value="Private Game" name="private">Private
+    <label for="private">Private</label>
+    <input type="checkbox" value="Private Game" name="private" {{#if game.private}}checked{{/if}}>
     <br>
 
-    <input type="submit" value="Create Game!">
+    {{#if game}}
+        <input type="submit" value="Edit {{game.name}}">
+    {{else}}
+        <input type="submit" value="Create Game!">
+    {{/if}}
 
 </form>
