@@ -26,7 +26,7 @@ const gameSchema = new Schema({
     // Time for the game to take place
     time: String,
     // Date for game to take place
-    date: Schema.Types.Date,
+    date: String,
     // Description of game to be played
     description: String,
     // Equipment necessary and the users who

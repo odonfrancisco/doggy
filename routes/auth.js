@@ -13,7 +13,7 @@ authRoutes.get("/login", (req, res, next) => {
 });
 
 authRoutes.post("/login", passport.authenticate("local", {
-  successRedirect: "/",
+  successRedirect: "/games",
   failureRedirect: "/auth/login",
   failureFlash: true,
   passReqToCallback: true
@@ -51,7 +51,7 @@ authRoutes.post("/signup", (req, res, next) => {
       if (err) {
         res.render("auth/signup", { message: "Something went wrong" });
       } else {
-        res.redirect("/");
+        res.redirect("/games");
       }
     });
   });
