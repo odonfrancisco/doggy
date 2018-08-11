@@ -22,6 +22,11 @@ function checkCreator(id){
     }
 }
 
+function capitalize(val) {
+    if (typeof val !== 'string') val = '';
+    return val.charAt(0).toUpperCase() + val.substring(1).toLowerCase();
+}
+
 router.get('/', ensureLoggedIn('/auth/login'), (req, res, next) => {
     Game.find()
         .then(games => {
@@ -67,7 +72,8 @@ router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
         time,
         date,
         equipment: equipmentObj,
-        creatorId: req.session.passport.user
+        creatorId: req.session.passport.user,
+        players: [req.session.passport.user]
     })
 
     if(private){
@@ -86,7 +92,7 @@ router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
 })
 
 router.get('/:id', ensureLoggedIn('/auth/login'), (req, res, next) => {
-    Game.findById(req.params.id)
+    Game.findById(req.params.id).populate('players', 'username')
         .then(game => {
             if(game.creatorId == req.session.passport.user){
                 game.admin = true;
@@ -140,6 +146,77 @@ router.get('/delete/:id', ensureLoggedIn('/auth/login'), checkCreator('id'), (re
         })
         .catch(err => {
             console.log('Error in deleting game. game.js/delete/:id', err);
+            next();
+        })
+})
+
+router.get('/players/add/:id', checkCreator('id'), (req, res, next) => {
+    // Var for arrray of search queries for the Id of each user
+    let allUsers = [];
+
+    // Array which will hold all the user id's found
+    let usersArray = [];
+
+    // Var to hold promise statement if users are added to event.
+    let find = new Promise((resolve, reject) => {resolve();});
+
+    if (typeof(req.query.users)==='string'){
+        const user = capitalize(req.query.users);
+        console.log(user)
+        find = User.findOne({username: user}, {_id:1})
+            .then(user => {
+                usersArray.push(user._id)
+            })
+            .catch(err => {
+                console.log('Error finding single user to add to game game.js/players/add/:id', err);
+            })
+    }
+
+    if (typeof(req.query.users)==='object'){
+        req.query.users.forEach(e => {
+            e = capitalize(e);
+            userObj = {};
+            userObj.username = e;
+            allUsers.push(userObj)
+        })
+        userFind = {
+            "$or": allUsers
+        }
+
+        find = User.find(userFind, {_id: 1})
+            .then(users => {
+                users.forEach(e => {
+                    usersArray.push(e._id);
+                });
+            })
+            .catch(err => {
+                console.log('Error in finding multiple users to add to game game.js/players/add/:id', err);
+            })
+    }
+
+    find.then(user => {
+        console.log(req.game.players)
+        if (usersArray.length > 0) req.game.players.unshift(...usersArray);
+        req.game.save()
+            .then(game => {
+                console.log('Game saves successfully: ', game);
+                res.redirect(`/games/${game._id}`);
+            })
+            .catch(err => {
+                console.log('Error in saving game after adding player game.js/players/add/:id ', err);
+                next()
+            })
+    })
+})
+
+router.get('/players/delete/:gameId/:userId', checkCreator('gameId'), (req, res, next) => {
+    req.game.players = req.game.players.filter(e => e===req.params.id)
+    req.game.save()
+        .then(game => {
+            res.redirect(`/games/${game._id}`)
+        })
+        .catch(err => {
+            console.log('Error in deleting player from game game.js/players/delete/:gameId/:userId', err);
             next();
         })
 })

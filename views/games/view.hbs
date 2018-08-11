@@ -5,8 +5,11 @@
     <input id="addBtn" type="button" value="Add Players" onclick="showForm('addBtn', 'addForm')">
 
     <div id="addForm" style="display:none">
-        <fieldset id="usersField">
-        </fieldset>
+        <form action="/games/players/add/{{game._id}}">
+            <fieldset id="usersField">
+            </fieldset>
+            <input type="submit" value="Add Players">
+        </form>
         <br>
 
         <label>Players</label>
@@ -21,5 +24,19 @@
             </div>
         </div>
     </div>
+    <a href="/games/edit/{{game._id}}"><input type="button" value="Edit"></a>
 {{/if}}
-<a href="/games/edit/{{game._id}}"><input type="button" value="Edit"></a>
+
+
+<ul><h3>Players</h3>
+    {{#each game.players}}
+        <li>{{this.username}}
+            {{#if ../game.admin}}
+                <a href="/games/players/delete/{{../game._id}}/{{this._id}}">
+                    <input type="button" value="Delete">
+                </a>
+            {{/if}}
+        </li>
+    {{/each}}    
+</ul>
+
