@@ -72,10 +72,11 @@ router.get('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
 router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
     const {name, description, category, minPlayers, maxPlayers, time, date, private} = req.body;
     let {equipment} = req.body;
-    let equipmentObj = {};
     equipmentArr = equipment.split(',');
-    equipmentArr.forEach(e => {
-        equipmentObj[e] = null;
+    equipmentArr = equipmentArr.map(e => {
+        let equipmentObj = {};
+        equipmentObj[e.replace(/\s+/g, '')] = null;
+        return equipmentObj
     })
 
     let newGame = new Game({
@@ -86,7 +87,7 @@ router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
         maxPlayers,
         time,
         date,
-        equipment: equipmentObj,
+        equipment: equipmentArr,
         creatorId: req.session.passport.user,
         players: [req.session.passport.user]
     })

@@ -47,5 +47,7 @@
 </ul>
 
 {{#if game.player}}
-    You are a player
+    {{#each game.equipment}}
+        {{this}}
+    {{/each}}
 {{/if}}
