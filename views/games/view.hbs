@@ -1,4 +1,10 @@
 <a href='/games'><input type="button" value="Go Back to all games"></a>
+{{#if game.notMember}}
+    <a href="/games/players/add/{{game._id}}?users={{currentUser.username}}">
+        <input type="button" value="Join Game">
+    </a>
+{{/if}}
+
 <h1>{{game.name}}</h1>
 
 {{#if game.admin}}
@@ -40,3 +46,6 @@
     {{/each}}    
 </ul>
 
+{{#if game.player}}
+    You are a player
+{{/if}}

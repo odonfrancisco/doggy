@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Game = require('../models/Game');
 const {ensureLoggedIn, ensureLoggedOut} = require('connect-ensure-login');
@@ -17,6 +18,20 @@ function checkCreator(id){
             })
             .catch(err => {
                 console.log('Error in finding game byId game.js to authorize user is creator: ', err);
+                next();
+            })
+    }
+}
+
+function addGameReq(id){
+    return (req, res, next) => {
+        Game.findById(req.params[id])
+            .then(game => {
+                req.game = game;
+                return next();
+            })
+            .catch(err => {
+                console.log('Error in adding game to request game.js function addGameReq: ', err);
                 next();
             })
     }
@@ -97,6 +112,12 @@ router.get('/:id', ensureLoggedIn('/auth/login'), (req, res, next) => {
             if(game.creatorId == req.session.passport.user){
                 game.admin = true;
             }
+            const playersId = game.players.map(e => e._id.toString())
+            if (playersId.indexOf(req.session.passport.user) > -1){
+                game.player = true
+            } else{
+                game.notMember = true;
+            }
             User.find({}, {username:1})
                 .then(users => {
                     res.render('games/view', {game, users})
@@ -150,7 +171,8 @@ router.get('/delete/:id', ensureLoggedIn('/auth/login'), checkCreator('id'), (re
         })
 })
 
-router.get('/players/add/:id', checkCreator('id'), (req, res, next) => {
+router.get('/players/add/:id', addGameReq('id'), (req, res, next) => {
+    console.log(req.url)
     // Var for arrray of search queries for the Id of each user
     let allUsers = [];
 
@@ -199,7 +221,7 @@ router.get('/players/add/:id', checkCreator('id'), (req, res, next) => {
         if (usersArray.length > 0) req.game.players.unshift(...usersArray);
         req.game.save()
             .then(game => {
-                console.log('Game saves successfully: ', game);
+                // console.log('Game saves successfully: ', game);
                 res.redirect(`/games/${game._id}`);
             })
             .catch(err => {
@@ -220,5 +242,6 @@ router.get('/players/delete/:gameId/:userId', checkCreator('gameId'), (req, res,
             next();
         })
 })
+
 
 module.exports = router;
