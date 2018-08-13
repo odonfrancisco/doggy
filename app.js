@@ -73,7 +73,12 @@ app.use(session({
 }))
 app.use(flash());
 require('./passport')(app);
-    
+
+// Adds user to locals to be accessed through handlebars
+app.use((req, res, next) => {
+  app.locals.currentUser = req.user;
+  next()
+})
 
 const index = require('./routes/index');
 app.use('/', index);

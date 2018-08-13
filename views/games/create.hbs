@@ -12,12 +12,12 @@
         {{#if game}}
             <option value="{{game.category}}">{{game.category}}</option>
         {{/if}}
-        <option value="basketball">Basketball</option>
-        <option value="soccer">Soccer</option>
-        <option value="baseball">BaseBall</option>
-        <option value="football">FootBall</option>
-        <option value="tennis">Tennis</option>
-        <option value="other">Other</option>
+        <option value="Basketball">Basketball</option>
+        <option value="Soccer">Soccer</option>
+        <option value="Baseball">BaseBall</option>
+        <option value="Football">FootBall</option>
+        <option value="Tennis">Tennis</option>
+        <option value="Other">Other</option>
     </select>
     <br>
     <label for="minPlayers">Min Players:</label>
@@ -34,7 +34,7 @@
     <br>
 
     <label for="equipment">Equipment needed (Separated by commas)</label>
-    <input type="text" name="equipment" placeholder="Equipment needed separated by commmas" value="{{game.equipment}}">
+    <input type="text" name="equipment" placeholder="Equipment needed separated by commmas" value="{{#each game.equipment}}{{this.name}}, {{/each}}">
 
     <br>
     <label for="private">Private</label>

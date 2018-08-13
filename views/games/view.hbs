@@ -1,12 +1,21 @@
 <a href='/games'><input type="button" value="Go Back to all games"></a>
+{{#if game.notMember}}
+    <a href="/games/players/add/{{game._id}}?users={{currentUser.username}}">
+        <input type="button" value="Join Game">
+    </a>
+{{/if}}
+
 <h1>{{game.name}}</h1>
 
 {{#if game.admin}}
     <input id="addBtn" type="button" value="Add Players" onclick="showForm('addBtn', 'addForm')">
 
     <div id="addForm" style="display:none">
-        <fieldset id="usersField">
-        </fieldset>
+        <form action="/games/players/add/{{game._id}}">
+            <fieldset id="usersField">
+            </fieldset>
+            <input type="submit" value="Add Players">
+        </form>
         <br>
 
         <label>Players</label>
@@ -21,5 +30,37 @@
             </div>
         </div>
     </div>
+    <a href="/games/edit/{{game._id}}"><input type="button" value="Edit"></a>
 {{/if}}
-<a href="/games/edit/{{game._id}}"><input type="button" value="Edit"></a>
+
+
+<ul><h3>Players</h3>
+    {{#each game.players}}
+        <li>{{this.username}}
+            {{#if ../game.admin}}
+                <a href="/games/players/delete/{{../game._id}}/{{this._id}}">
+                    <input type="button" value="Remove">
+                </a>
+            {{/if}}
+        </li>
+    {{/each}}    
+</ul>
+
+{{#if game.player}}
+    <input id="equipmentBtn" type="button" value="Equipment Needed" onclick="showForm('equipmentBtn', 'equipmentForm')">
+    <form id="equipmentForm" style="display:none" action="/games/equipment/{{game._id}}" method="post">
+        <h4>What can you bring to the game?</h4>
+        {{#each game.equipment}}
+        <div>
+            <input type="checkbox" name="equipment" value="{{this.name}}">{{this.name}}
+            {{#if this.players}}
+                <strong>Brought by:</strong>
+                {{#each this.players}}
+                    {{this.username}}
+                {{/each}}
+            {{/if}}
+        </div>
+        {{/each}}
+        <input type="submit" value="Submit">
+    </form>
+{{/if}}

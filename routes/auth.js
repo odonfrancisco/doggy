@@ -7,6 +7,11 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const bcryptSalt = 10;
 
+function capitalize(val) {
+  if (typeof val !== 'string') val = '';
+  return val.charAt(0).toUpperCase() + val.substring(1).toLowerCase();
+}
+
 
 authRoutes.get("/login", (req, res, next) => {
   res.render("auth/login", { "message": req.flash("error") });
@@ -24,9 +29,8 @@ authRoutes.get("/signup", (req, res, next) => {
 });
 
 authRoutes.post("/signup", (req, res, next) => {
-  const username = req.body.username;
+  const username = capitalize(req.body.username);
   const password = req.body.password;
-  const rol = req.body.role;
   if (username === "" || password === "") {
     res.render("auth/signup", { message: "Indicate username and password" });
     return;
