@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const equipmentSchema = new Schema({
+    name: String,
+    players: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }]
+})
+
 const gameSchema = new Schema({
     name: {
         type: String,
@@ -31,7 +39,7 @@ const gameSchema = new Schema({
     description: String,
     // Equipment necessary and the users who
         // will supply said equipment
-    equipment: Schema.Types.Mixed,
+    equipment: [equipmentSchema],
     // Array of players' IDs
     players: [{
         type: Schema.Types.ObjectId,

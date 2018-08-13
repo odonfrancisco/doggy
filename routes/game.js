@@ -75,7 +75,8 @@ router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
     equipmentArr = equipment.split(',');
     equipmentArr = equipmentArr.map(e => {
         let equipmentObj = {};
-        equipmentObj[e.replace(/\s+/g, '')] = null;
+        equipmentObj.name = e.replace(/\s+/g, '')
+        equipmentObj.players = [];
         return equipmentObj
     })
 
@@ -108,17 +109,19 @@ router.post('/create', ensureLoggedIn('/auth/login'), (req, res, next) => {
 })
 
 router.get('/:id', ensureLoggedIn('/auth/login'), (req, res, next) => {
-    Game.findById(req.params.id).populate('players', 'username')
+    Game.findById(req.params.id).populate('players', 'username').populate('equipment.players', 'username')
         .then(game => {
             if(game.creatorId == req.session.passport.user){
                 game.admin = true;
             }
             const playersId = game.players.map(e => e._id.toString())
+            // Checks that current user is a player of the game
             if (playersId.indexOf(req.session.passport.user) > -1){
                 game.player = true
             } else{
                 game.notMember = true;
             }
+
             User.find({}, {username:1})
                 .then(users => {
                     res.render('games/view', {game, users})
@@ -138,20 +141,22 @@ router.get('/edit/:id', ensureLoggedIn('/auth/login'), checkCreator('id'), (req,
     // Passing the particular game in the request in the 'checkCreator' function
         // then making it equal to the game variable to pass to hbs
     const game = req.game;
-    game.equipment = Object.keys(game.equipment).join();
     res.render('games/create', {game})
 })
 
 router.post('/edit/:id', ensureLoggedIn('/auth/login'), checkCreator('id'), (req, res, next) => {
     const {name, description, category, minPlayers, maxPlayers, time, date, private} = req.body;
     let {equipment} = req.body;
-    let equipmentObj = {};
     equipmentArr = equipment.split(',');
-    equipmentArr.forEach(e => {
-        equipmentObj[e] = null;
+    equipmentArr = equipmentArr.map(e => {
+        let equipmentObj = {};
+        equipmentObj.name = e.replace(/\s+/g, '')
+        equipmentObj.players = [];
+        return equipmentObj
     })
 
-    Game.findByIdAndUpdate(req.params.id, {name, description, category, minPlayers, maxPlayers, time, date, private, equipment:equipmentObj})
+
+    Game.findByIdAndUpdate(req.params.id, {name, description, category, minPlayers, maxPlayers, time, date, private, equipment:equipmentArr})
         .then(game => {
             res.redirect(`/games/${game._id}`)
         })
@@ -244,5 +249,31 @@ router.get('/players/delete/:gameId/:userId', checkCreator('gameId'), (req, res,
         })
 })
 
+router.post('/equipment/:id', (req, res, next) => {
+    const {equipment} = req.body;
+    Game.findByIdAndUpdate(req.params.id)
+        .then(game => {
+            game.equipment.map(e => {
+                const index = equipment.indexOf(e.name)
+                if (index>-1 && e.players.indexOf(req.session.passport.user)===-1){
+                    e.players.unshift(req.session.passport.user);
+                }
+            })
+            console.log(game.equipment)
+            game.save()
+                .then(game => {
+                    console.log(game.equipment)
+                    res.redirect(`/games/${game._id}`);
+                })
+                .catch(err => {
+                    console.log('Error in saving game after adjusting user to provide equipment. game.js/equipment/:id', err);
+                    next();
+                })
+        })
+        .catch(err => {
+            console.log('Error in finding game by id to adjust equipment. game.js/equipment/:id', err);
+            next();
+        })
+})
 
 module.exports = router;

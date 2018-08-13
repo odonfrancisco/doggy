@@ -39,7 +39,7 @@
         <li>{{this.username}}
             {{#if ../game.admin}}
                 <a href="/games/players/delete/{{../game._id}}/{{this._id}}">
-                    <input type="button" value="Delete">
+                    <input type="button" value="Remove">
                 </a>
             {{/if}}
         </li>
@@ -47,7 +47,20 @@
 </ul>
 
 {{#if game.player}}
-    {{#each game.equipment}}
-        {{this}}
-    {{/each}}
+    <input id="equipmentBtn" type="button" value="Equipment Needed" onclick="showForm('equipmentBtn', 'equipmentForm')">
+    <form id="equipmentForm" style="display:none" action="/games/equipment/{{game._id}}" method="post">
+        <h4>What can you bring to the game?</h4>
+        {{#each game.equipment}}
+        <div>
+            <input type="checkbox" name="equipment" value="{{this.name}}">{{this.name}}
+            {{#if this.players}}
+                <strong>Brought by:</strong>
+                {{#each this.players}}
+                    {{this.username}}
+                {{/each}}
+            {{/if}}
+        </div>
+        {{/each}}
+        <input type="submit" value="Submit">
+    </form>
 {{/if}}

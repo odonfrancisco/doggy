@@ -34,7 +34,7 @@
     <br>
 
     <label for="equipment">Equipment needed (Separated by commas)</label>
-    <input type="text" name="equipment" placeholder="Equipment needed separated by commmas" value="{{game.equipment}}">
+    <input type="text" name="equipment" placeholder="Equipment needed separated by commmas" value="{{#each game.equipment}}{{this.name}}, {{/each}}">
 
     <br>
     <label for="private">Private</label>
